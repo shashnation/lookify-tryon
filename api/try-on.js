@@ -34,25 +34,14 @@ export default async function handler(req, res) {
 
     const apiKey = process.env.CORLEN_API_KEY?.trim();
 
-    const diagnostic = {
-      apiKeyConfigured: Boolean(apiKey),
-      apiKeyLength: apiKey ? apiKey.length : 0,
-      apiKeyFormat: apiKey
-        ? apiKey.startsWith("corlen_live_")
-        : false
-    };
-
-    console.log("Corlen API diagnostic:", diagnostic);
-
     if (!apiKey) {
       return res.status(500).json({
-        error: "CORLEN_API_KEY is not configured.",
-        diagnostic
+        error: "CORLEN_API_KEY is not configured."
       });
     }
 
     const response = await fetch(
-      "https://corlen.io/api/v1/tryon",
+      "https://www.corlen.io/api/v1/tryon",
       {
         method: "POST",
         headers: {
@@ -69,20 +58,14 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    console.log("Corlen response status:", response.status);
-
     if (!response.ok) {
       console.error("Corlen API error:", {
         status: response.status,
-        error: data?.error || "Unknown Corlen error",
-        diagnostic
+        error: data?.error || "Unknown Corlen error"
       });
 
       return res.status(response.status).json({
-        error:
-          data?.error ||
-          "Corlen request failed.",
-        diagnostic
+        error: data?.error || "Corlen request failed."
       });
     }
 
