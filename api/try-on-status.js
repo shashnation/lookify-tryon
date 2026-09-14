@@ -21,7 +21,9 @@ export default async function handler(req, res) {
     });
   }
 
-  if (!process.env.CORLEN_API_KEY) {
+  const apiKey = process.env.CORLEN_API_KEY?.trim();
+
+  if (!apiKey) {
     return res.status(500).json({
       error: "CORLEN_API_KEY is not configured."
     });
@@ -29,11 +31,11 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `https://corlen.io/api/v1/tryon/${encodeURIComponent(jobId)}`,
+      `https://www.corlen.io/api/v1/tryon/${encodeURIComponent(jobId)}`,
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${process.env.CORLEN_API_KEY}`
+          Authorization: `Bearer ${apiKey}`
         }
       }
     );
@@ -41,8 +43,15 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
+      console.error("Corlen status error:", {
+        status: response.status,
+        error: data?.error || "Unknown Corlen error"
+      });
+
       return res.status(response.status).json({
-        error: data?.error || "Unable to check try-on status."
+        error:
+          data?.error ||
+          "Unable to check try-on status."
       });
     }
 
@@ -52,7 +61,8 @@ export default async function handler(req, res) {
     console.error("Status error:", error);
 
     return res.status(500).json({
-      error: "Something went wrong while checking the try-on status."
+      error:
+        "Something went wrong while checking the try-on status."
     });
   }
 }
