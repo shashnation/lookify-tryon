@@ -34,9 +34,20 @@ export default async function handler(req, res) {
 
     const apiKey = process.env.CORLEN_API_KEY?.trim();
 
+    const diagnostic = {
+      apiKeyConfigured: Boolean(apiKey),
+      apiKeyLength: apiKey ? apiKey.length : 0,
+      apiKeyFormat: apiKey
+        ? apiKey.startsWith("corlen_live_")
+        : false
+    };
+
+    console.log("Corlen API diagnostic:", diagnostic);
+
     if (!apiKey) {
       return res.status(500).json({
-        error: "CORLEN_API_KEY is not configured."
+        error: "CORLEN_API_KEY is not configured.",
+        diagnostic
       });
     }
 
@@ -58,16 +69,20 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
+    console.log("Corlen response status:", response.status);
+
     if (!response.ok) {
       console.error("Corlen API error:", {
         status: response.status,
-        error: data?.error || "Unknown Corlen error"
+        error: data?.error || "Unknown Corlen error",
+        diagnostic
       });
 
       return res.status(response.status).json({
         error:
           data?.error ||
-          "Corlen request failed."
+          "Corlen request failed.",
+        diagnostic
       });
     }
 
@@ -77,8 +92,7 @@ export default async function handler(req, res) {
     console.error("Try-on error:", error);
 
     return res.status(500).json({
-      error:
-        "Something went wrong while starting the try-on."
+      error: "Something went wrong while starting the try-on."
     });
   }
 }
